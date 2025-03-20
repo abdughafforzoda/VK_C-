@@ -5,51 +5,68 @@
 
 using namespace std;
 
-int main() {
-    ifstream fin("graph.txt");
-    if (!fin) {
-        cerr << "Ошибка открытия файла graph.txt" << endl;
-        return 1;
+class Graph {
+private:
+    int vertices;
+    vector<vector<int>> adjList;
+
+public:
+    Graph(int v) : vertices(v) {
+        adjList.resize(v);
     }
-    
-    int nVertices, nEdges;
-    fin >> nVertices;
-    fin >> nEdges;
-    
-    vector<vector<int>> adj(nVertices);
-    
-    for (int i = 0; i < nEdges; i++) {
-        int u, v;
-        fin >> u >> v;
-        adj[u].push_back(v);
-        adj[v].push_back(u);
+
+    void addEdge(int u, int v) {
+        adjList[u].push_back(v);
+        adjList[v].push_back(u); 
     }
-    
-    int startVertex;
-    fin >> startVertex;
-    fin.close();
-    
-    const int INF = 1e9;
-    vector<int> dist(nVertices, INF);
-    
-    queue<int> q;
-    dist[startVertex] = 0;
-    q.push(startVertex);
-    
-    while (!q.empty()) {
-        int u = q.front();
-        q.pop();
-        for (int v : adj[u]) {
-            if (dist[v] == INF) {
-                dist[v] = dist[u] + 1;
-                q.push(v);
+
+    void shortestPath(int start) {
+        vector<int> distance(vertices, -1);
+        queue<int> q;
+        
+        distance[start] = 0;
+        q.push(start);
+
+        while (!q.empty()) {
+            int current = q.front();
+            q.pop();
+
+            for (int neighbor : adjList[current]) {
+                if (distance[neighbor] == -1) {
+                    distance[neighbor] = distance[current] + 1;
+                    q.push(neighbor);
+                }
             }
         }
+
+        for (int i = 0; i < vertices; i++) {
+            cout << distance[i] << endl;
+        }
     }
-    
-    for (int d : dist) {
-        cout << d << endl;
+};
+
+int main() {
+    ifstream file("graph.txt");
+    if (!file) {
+        cerr << "Ошибка открытия файла!" << endl;
+        return 1;
     }
-    
+
+    int numVertices, numEdges, startVertex;
+    file >> numVertices >> numEdges;
+
+    Graph g(numVertices);
+
+    for (int i = 0; i < numEdges; i++) {
+        int u, v;
+        file >> u >> v;
+        g.addEdge(u, v);
+    }
+
+    file >> startVertex;
+    file.close();
+
+    g.shortestPath(startVertex);
+
     return 0;
 }
